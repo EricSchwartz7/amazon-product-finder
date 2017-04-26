@@ -1,0 +1,35 @@
+<html>
+<head>
+<script>
+function hello(){
+  var keyword = document.getElementById("keyword").value
+  document.getElementById("txtHint").innerHTML = keyword
+}
+function query(){
+  var display = document.getElementById("content")
+  var xmlhttp = new XMLHttpRequest();
+  var keyword = document.getElementById("keyword").value
+  xmlhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      if (display.innerHTML === ""){
+        display.innerHTML = this.responseText;
+      } else {
+        display.innerHTML = "Please try again.";
+      };
+    };
+  }
+  xmlhttp.open("GET", "app2.php?q=" + keyword, true);
+  xmlhttp.send();
+}
+</script>
+</head>
+<body>
+  <form>
+  <input id="keyword" type="text">
+  <button type="button" onclick="query()">Search</button>
+  </form>
+  <p><span id="content"></span></p>
+  <table id="table" align='left'>
+  </table>
+</body>
+</html>
