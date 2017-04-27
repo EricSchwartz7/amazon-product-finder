@@ -23,7 +23,7 @@
         display.innerHTML = "Searching...";
       };
     }
-    xmlhttp.open("GET", "app2.php?q=" + keyword, true);
+    xmlhttp.open("GET", "app.php?q=" + keyword, true);
     xmlhttp.send();
   }
   function refreshData(){
@@ -36,10 +36,11 @@
         display.innerHTML = "Loading...";
       };
     }
-    xmlhttp.open("GET", "app2.php", true);
+    xmlhttp.open("GET", "app.php", true);
     xmlhttp.send();
   }
   function addToDB(asin, title, mpn, price){
+    debugger
     document.getElementById("status").innerHTML = "Added " + title;
     var display = document.getElementById("content");
     var xmlhttp = new XMLHttpRequest();
@@ -50,7 +51,7 @@
         display.innerHTML = "Saving...";
       };
     }
-    xmlhttp.open("POST", "app2.php", true);
+    xmlhttp.open("POST", "app.php", true);
     xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     xmlhttp.send("asin=" + asin + "&title=" + title + "&mpn=" + mpn + "&price=" + price);
   }
