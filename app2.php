@@ -12,7 +12,9 @@ $endpoint = "webservices.amazon.com";
 $uri = "/onca/xml";
 
 // get the keywords parameter from URL
-$keywords = $_REQUEST["q"];
+if ($_REQUEST["q"]){
+  $keywords = $_REQUEST["q"];
+}
 
 $params = array(
     "Service" => "AWSECommerceService",
@@ -50,38 +52,107 @@ $signature = base64_encode(hash_hmac("sha256", $string_to_sign, $aws_secret_key,
 // Generate the signed URL
 $request_url = 'http://'.$endpoint.$uri.'?'.$canonical_query_string.'&Signature='.rawurlencode($signature);
 
-// echo $request_url."<br>";
-
 $response = file_get_contents($request_url);
-// echo "<br>Response: \"".$response."\"";
 $parsed_xml = simplexml_load_string($response);
-// print_r($parsed_xml);
-// print($parsed_xml->Items->Item->ItemAttributes->Title);
 
 function printSearchResults($parsed_xml){
   $numOfItems = $parsed_xml->Items->TotalResults;
-  print("<table>");
+  // print("<table>");
   if($numOfItems>0){
-  foreach($parsed_xml->Items->Item as $current){
-    // print("<td><font size='-1'><b>".$current->ItemAttributes->Title."</b>");
-    if (isset($current->ASIN)) {
-      print("<br>ASIN: ".$current->ASIN);
-    }
-    if (isset($current->ItemAttributes->Title)) {
-      print("<br>Title: ".$current->ItemAttributes->Title);
-    }
-    if (isset($current->ItemAttributes->MPN)) {
-      print("<br>MPN: ".$current->ItemAttributes->MPN);
-    }
-    if (isset($current->Offers->Offer->OfferListing->Price->FormattedPrice)){
-      print("<br>Price: ".$current->Offers->Offer->OfferListing->Price->FormattedPrice."<br>");
-    }
-    // else{
-    //   print("<center>No matches found.</center>");
-    // };
-  }
- }
+    foreach($parsed_xml->Items->Item as $current){
+      if (isset($current->ASIN)) {
+        $asin = $current->ASIN;
+        print("<br>ASIN: ".$asin);
+      };
+      if (isset($current->ItemAttributes->Title)) {
+        $title = $current->ItemAttributes->Title;
+        print("<br>Title: ".$title);
+      };
+      if (isset($current->ItemAttributes->MPN)) {
+        $mpn = $current->ItemAttributes->MPN;
+        print("<br>MPN: ".$mpn);
+      };
+      if (isset($current->Offers->Offer->OfferListing->Price->FormattedPrice)){
+        $formattedPrice = $current->Offers->Offer->OfferListing->Price->FormattedPrice;
+        $price = $current->Offers->Offer->OfferListing->Price->Amount;
+        print("<br>Price: ".$formattedPrice);
+      };
+      if (isset($current->ASIN)) {
+        print("<br><button type='button' onclick='addToDB(\"".$asin."\", \"".$title."\", \"".$mpn."\", ".$price.")'>Add to DB</button><br>");
+      };
+    };
+  };
 }
 printSearchResults($parsed_xml);
+
+
+// Database interaction
+function printData(){
+  $servername = "127.0.0.1";
+  $username = "root";
+  $password = "guitar677";
+  $dbname = "products";
+
+  // Create connection
+  $conn = mysqli_connect($servername, $username, $password, $dbname);
+  // Check connection
+  if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
+  }
+
+  $sql = "SELECT asin, title, mpn, price FROM items";
+  $result = mysqli_query($conn, $sql);
+
+  if ($result->num_rows > 0) {
+    echo "<table><tr><th>ASIN</th><th>Title</th><th>MPN</th><th>Price</th></tr>";
+    // output data of each row
+    while($row = $result->fetch_assoc()) {
+      // echo "<tr><td>".$row["asin"]."</td></tr>";
+      echo "<tr><td>".$row["asin"]
+      ."</td><td>".$row["title"]
+      ."</td><td>".$row["mpn"]
+      ."</td><td>$".number_format($row["price"]/100, 2)
+      ."</td></tr>";
+    }
+    echo "</table>";
+  } else {
+    echo "0 results";
+  }
+  $conn->close();
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+  // Define the product attributes coming in
+  $asin = $_POST["asin"];
+  $title = $_POST["title"];
+  $mpn = $_POST["mpn"];
+  $price = $_POST["price"];
+
+
+  $servername = "127.0.0.1";
+  $username = "root";
+  $password = "guitar677";
+  $dbname = "products";
+
+  // Create connection
+  $conn = mysqli_connect($servername, $username, $password, $dbname);
+  // Check connection
+  if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
+  }
+
+  $sql = "INSERT INTO items (asin, title, mpn, price) VALUES ('".$asin."', '".$title."', '".$mpn."', ".$price.")";
+
+  mysqli_query($conn, $sql);
+
+  $conn->close();
+
+  // print("<p>Added ".$title."</p>");
+
+  printData();
+} elseif (!$_REQUEST["q"]) {
+  printData();
+}
 
 ?>

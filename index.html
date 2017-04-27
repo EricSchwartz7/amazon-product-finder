@@ -1,35 +1,75 @@
 <html>
 <head>
+  <!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 <script>
-function hello(){
-  var keyword = document.getElementById("keyword").value
-  document.getElementById("txtHint").innerHTML = keyword
-}
-function query(){
-  var display = document.getElementById("content")
-  var xmlhttp = new XMLHttpRequest();
-  var keyword = document.getElementById("keyword").value
-  xmlhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
-      if (display.innerHTML === ""){
-        display.innerHTML = this.responseText;
+  function query(){
+    var display = document.getElementById("search-results");
+    var xmlhttp = new XMLHttpRequest();
+    var keyword = document.getElementById("keyword").value;
+    xmlhttp.onreadystatechange = function() {
+      if (this.readyState === 4 && this.status === 200) {
+        if (this.responseText === "" ) {
+          display.innerHTML = "No items found."
+        } else {
+          display.innerHTML = this.responseText;
+        };
       } else {
-        display.innerHTML = "Please try again.";
+        display.innerHTML = "Searching...";
       };
-    };
+    }
+    xmlhttp.open("GET", "app2.php?q=" + keyword, true);
+    xmlhttp.send();
   }
-  xmlhttp.open("GET", "app2.php?q=" + keyword, true);
-  xmlhttp.send();
-}
+  function refreshData(){
+    var display = document.getElementById("content");
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function() {
+      if (this.readyState === 4 && this.status === 200) {
+        display.innerHTML = this.responseText
+      } else {
+        display.innerHTML = "Loading...";
+      };
+    }
+    xmlhttp.open("GET", "app2.php", true);
+    xmlhttp.send();
+  }
+  function addToDB(asin, title, mpn, price){
+    document.getElementById("status").innerHTML = "Added " + title;
+    var display = document.getElementById("content");
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function() {
+      if (this.readyState === 4 && this.status === 200) {
+        display.innerHTML = this.responseText
+      } else {
+        display.innerHTML = "Saving...";
+      };
+    }
+    xmlhttp.open("POST", "app2.php", true);
+    xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xmlhttp.send("asin=" + asin + "&title=" + title + "&mpn=" + mpn + "&price=" + price);
+  }
+  window.onload = function() {
+    refreshData();
+  }
 </script>
 </head>
 <body>
-  <form>
-  <input id="keyword" type="text">
-  <button type="button" onclick="query()">Search</button>
-  </form>
-  <p><span id="content"></span></p>
-  <table id="table" align='left'>
-  </table>
+  <div id="left-col" class="col-lg-6">
+    <p><span id="content"></span></p>
+  </div>
+  <div id="right-col" class="col-lg-6">
+    <form>
+      <input id="keyword" type="text">
+      <button type="button" onclick="query()">Search</button>
+    </form>
+    <p id="status" />
+    <p id="search-results"></p>
+  </div>
 </body>
 </html>
