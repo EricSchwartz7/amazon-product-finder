@@ -98,6 +98,8 @@ function printData(){
   $password = $url["pass"];
   $db = substr($url["path"], 1);
 
+  echo $server." ".$username." ".$password." ".$db;
+
   $conn = new mysqli($server, $username, $password, $db);
 
   // Create connection
