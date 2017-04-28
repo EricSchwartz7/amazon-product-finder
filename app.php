@@ -1,12 +1,9 @@
 <?php
+// ini_set('display_errors', 'On');
+// error_reporting(E_ALL);
 
-// Your AWS Access Key ID, as taken from the AWS Your Account page
-$aws_access_key_id = "AKIAIOWFZ4KTTJAKNLFQ";
+require ("config.php");
 
-// Your AWS Secret Key corresponding to the above ID, as taken from the AWS Your Account page
-$aws_secret_key = "DL6rUpqfXpMuQEVmiGGYgudKa0ePlbaR8OX4OjHB";
-
-// The region you are interested in
 $endpoint = "webservices.amazon.com";
 
 $uri = "/onca/xml";
@@ -19,8 +16,8 @@ if ($_REQUEST["q"]){
 $params = array(
     "Service" => "AWSECommerceService",
     "Operation" => "ItemSearch",
-    "AWSAccessKeyId" => "AKIAIOWFZ4KTTJAKNLFQ",
-    "AssociateTag" => "q0d9b-20",
+    "AWSAccessKeyId" => AWS_ACCESS_KEY_ID,
+    "AssociateTag" => ASSOCIATE_ID,
     "SearchIndex" => "All",
     "Keywords" => $keywords,
     "ResponseGroup" => "ItemAttributes,ItemIds,OfferListings"
@@ -47,7 +44,7 @@ $canonical_query_string = join("&", $pairs);
 $string_to_sign = "GET\n".$endpoint."\n".$uri."\n".$canonical_query_string;
 
 // Generate the signature required by the Product Advertising API
-$signature = base64_encode(hash_hmac("sha256", $string_to_sign, $aws_secret_key, true));
+$signature = base64_encode(hash_hmac("sha256", $string_to_sign, AWS_SECRET_KEY, true));
 
 // Generate the signed URL
 $request_url = 'http://'.$endpoint.$uri.'?'.$canonical_query_string.'&Signature='.rawurlencode($signature);
@@ -76,7 +73,7 @@ function printSearchResults($parsed_xml){
       };
       if (isset($current->Offers->Offer->OfferListing->Price->FormattedPrice)){
         $formattedPrice = $current->Offers->Offer->OfferListing->Price->FormattedPrice;
-        $price = $current->Offers->Offer->OfferListing->Price->Amount;
+        // $price = $current->Offers->Offer->OfferListing->Price->Amount;
         print("<br>Price: <span class='price'>".$formattedPrice."</span>");
       };
       if (isset($current->ASIN)) {
@@ -93,13 +90,9 @@ printSearchResults($parsed_xml);
 
 // Database interaction
 function printData(){
-  $servername = "127.0.0.1";
-  $username = "root";
-  $password = "guitar677";
-  $dbname = "products";
 
   // Create connection
-  $conn = mysqli_connect($servername, $username, $password, $dbname);
+  $conn = mysqli_connect(DB_SERVERNAME, DB_USERNAME, DB_PASSWORD, DB_DATABASE);
   // Check connection
   if (!$conn) {
     die("Connection failed: " . mysqli_connect_error());
@@ -113,10 +106,20 @@ function printData(){
     // output data of each row
     while($row = $result->fetch_assoc()) {
       // echo "<tr><td>".$row["asin"]."</td></tr>";
+
+      $price = $row["price"];
+      settype($price, "string");
+      if ($price == "0"){
+        $price = "Not shown";
+      }
+      else {
+        $price = "$".number_format($price/100, 2);
+      };
+
       echo "<tr><td>".$row["asin"]
       ."</td><td>".stripslashes($row["title"])
       ."</td><td>".$row["mpn"]
-      ."</td><td>$".number_format($row["price"]/100, 2)
+      ."</td><td>".$price
       ."</td></tr>";
     }
     echo "</table>";
@@ -134,14 +137,10 @@ function addToDB(){
   $mpn = $_POST["mpn"];
   $price = $_POST["price"];
 
-
-  $servername = "127.0.0.1";
-  $username = "root";
-  $password = "guitar677";
-  $dbname = "products";
+  // print("<h1>".$price."</h1>");
 
   // Create connection
-  $conn = mysqli_connect($servername, $username, $password, $dbname);
+  $conn = mysqli_connect(DB_SERVERNAME, DB_USERNAME, DB_PASSWORD, DB_DATABASE);
   // Check connection
   if (!$conn) {
     die("Connection failed: " . mysqli_connect_error());
@@ -152,8 +151,6 @@ function addToDB(){
   mysqli_query($conn, $sql);
 
   $conn->close();
-
-  // print("<p>Added ".$title."</p>");
 
   printData();
 }

@@ -10,32 +10,33 @@
 <script>
 
   function query(){
-    var display = document.getElementById("search-results");
+    $("#status").html("");
+    var $display = $("#search-results");
     var xmlhttp = new XMLHttpRequest();
-    var keyword = document.getElementById("keyword").value;
+    var $keyword = $("#keyword").val();
     xmlhttp.onreadystatechange = function() {
       if (this.readyState === 4 && this.status === 200) {
         if (this.responseText === "" ) {
-          display.innerHTML = "No items found."
+          $display.html("No items found.");
         } else {
-          display.innerHTML = this.responseText;
+          $display.html(this.responseText);
         };
       } else {
-        display.innerHTML = "Searching...";
+        $display.html("Searching...");
       };
     }
-    xmlhttp.open("GET", "app.php?q=" + keyword, true);
+    xmlhttp.open("GET", "app.php?q=" + $keyword, true);
     xmlhttp.send();
   }
 
   function refreshData(){
-    var display = document.getElementById("content");
+    var $display = $("#content");
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function() {
       if (this.readyState === 4 && this.status === 200) {
-        display.innerHTML = this.responseText
+        $display.html(this.responseText);
       } else {
-        display.innerHTML = "Loading...";
+        $display.html("Loading...");
       };
     }
     xmlhttp.open("GET", "app.php", true);
@@ -43,24 +44,34 @@
   }
 
   function addToDB(index){
-    var asin = $("#" + index + " span.asin").text();
-    var title = $("#" + index + " span.title").text();
-    var mpn = $("#" + index +" span.mpn").text();
-    var price = $("#" + index + " span.price").text().slice(1) * 100;
+    var $asin = $("#" + index + " span.asin").text();
+    var $title = $("#" + index + " span.title").text();
+    var $mpn = $("#" + index +" span.mpn").text();
+    var $price = $("#" + index + " span.price").text();
 
-    document.getElementById("status").innerHTML = "Added " + title;
-    var display = document.getElementById("content");
+    console.log($price);
+    // Handle "too low to display" or not shown
+    if ($price === "Too low to display"){
+      $price = 0
+    } else if ($price) {
+      $price = $price.slice(1).replace("," , "") * 100;
+    } else {
+      $price = 0
+    }
+
+    $("#status").html("Added " + $title);
+    var $display = $("#content");
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function() {
       if (this.readyState === 4 && this.status === 200) {
-        display.innerHTML = this.responseText
+        $display.html(this.responseText);
       } else {
-        display.innerHTML = "Saving...";
+        $display.html("Saving...");
       };
     }
     xmlhttp.open("POST", "app.php", true);
     xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    xmlhttp.send("asin=" + asin + "&title=" + title + "&mpn=" + mpn + "&price=" + price);
+    xmlhttp.send("asin=" + $asin + "&title=" + $title + "&mpn=" + $mpn + "&price=" + $price);
   }
 
   window.onload = function() {
