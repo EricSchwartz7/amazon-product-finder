@@ -1,5 +1,6 @@
 <?php
-define (DB_SERVERNAME, "127.0.0.1");
+// define (DB_SERVERNAME, "127.0.0.1");
+define (DB_SERVERNAME, "https://amazon-product-finder.herokuapp.com/");
 define (DB_USERNAME, "root");
 define (DB_PASSWORD, "guitar677");
 define (DB_DATABASE, "products");
