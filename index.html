@@ -8,6 +8,7 @@
 <!-- Latest compiled and minified JavaScript -->
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 <script>
+
   function query(){
     var display = document.getElementById("search-results");
     var xmlhttp = new XMLHttpRequest();
@@ -26,6 +27,7 @@
     xmlhttp.open("GET", "app.php?q=" + keyword, true);
     xmlhttp.send();
   }
+
   function refreshData(){
     var display = document.getElementById("content");
     var xmlhttp = new XMLHttpRequest();
@@ -39,8 +41,13 @@
     xmlhttp.open("GET", "app.php", true);
     xmlhttp.send();
   }
-  function addToDB(asin, title, mpn, price){
-    debugger
+
+  function addToDB(index){
+    var asin = $("#" + index + " span.asin").text();
+    var title = $("#" + index + " span.title").text();
+    var mpn = $("#" + index +" span.mpn").text();
+    var price = $("#" + index + " span.price").text().slice(1) * 100;
+
     document.getElementById("status").innerHTML = "Added " + title;
     var display = document.getElementById("content");
     var xmlhttp = new XMLHttpRequest();
@@ -55,9 +62,11 @@
     xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     xmlhttp.send("asin=" + asin + "&title=" + title + "&mpn=" + mpn + "&price=" + price);
   }
+
   window.onload = function() {
     refreshData();
   }
+
 </script>
 </head>
 <body>
