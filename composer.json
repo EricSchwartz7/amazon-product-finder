@@ -1,0 +1,11 @@
+{
+    "name": "eric/amazon-product-finder",
+    "description": "A shopping cart app built with AWS API",
+    "authors": [
+        {
+            "name": "Eric Schwartz",
+            "email": "ericschwartz7@gmail.com"
+        }
+    ],
+    "require": {}
+}
