@@ -52,11 +52,11 @@
     console.log($price);
     // Handle "too low to display" or not shown
     if ($price === "Too low to display"){
-      $price = 0
+      $price = 0;
     } else if ($price) {
       $price = $price.slice(1).replace("," , "") * 100;
     } else {
-      $price = 0
+      $price = 0;
     }
 
     $("#status").html("Added " + $title);

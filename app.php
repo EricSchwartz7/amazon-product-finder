@@ -91,17 +91,17 @@ printSearchResults($parsed_xml);
 // Database interaction
 function printData(){
 
-  $url = parse_url(getenv("CLEARDB_DATABASE_URL"));
-
-  $server = $url["host"];
-  $username = $url["user"];
-  $password = $url["pass"];
-  $db = substr($url["path"], 1);
-
-  $conn = new mysqli($server, $username, $password, $db);
+  // $url = parse_url(getenv("CLEARDB_DATABASE_URL"));
+  //
+  // $server = $url["host"];
+  // $username = $url["user"];
+  // $password = $url["pass"];
+  // $db = substr($url["path"], 1);
+  //
+  // $conn = new mysqli($server, $username, $password, $db);
 
   // Create connection
-  // $conn = mysqli_connect(DB_SERVERNAME, DB_USERNAME, DB_PASSWORD, DB_DATABASE);
+  $conn = mysqli_connect(DB_SERVERNAME, DB_USERNAME, DB_PASSWORD, DB_DATABASE);
   // Check connection
   if (!$conn) {
     die("Connection failed: " . mysqli_connect_error());
