@@ -4,34 +4,50 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 <!-- Optional theme -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+<link rel="stylesheet" href="style.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <!-- Latest compiled and minified JavaScript -->
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 <script>
 
-  function query(){
-    $("#status").html("");
-    var $display = $("#search-results");
-    var xmlhttp = new XMLHttpRequest();
-    var $keyword = $("#keyword").val();
-    xmlhttp.onreadystatechange = function() {
-      if (this.readyState === 4 && this.status === 200) {
-        if (this.responseText === "" ) {
-          $display.html("No items found.");
+  function createEventListener(){
+    // Put a click handler on the search button
+    $(".btn").on('click', function(e){
+      // Prevent page reload
+      e.preventDefault();
+      // Clear existing status message
+      $("#status").html("");
+      // Select the div to display results
+      var $display = $("#search-results");
+      // Grab the keyword(s) from the input field
+      var $keyword = $("#keyword").val();
+      // AJAX Request with search query- will go to Amazon API
+      var xmlhttp = new XMLHttpRequest();
+      xmlhttp.open("GET", "app.php?q=" + $keyword, true);
+      xmlhttp.send();
+      xmlhttp.onreadystatechange = function() {
+        if ($keyword === ""){
+          $display.html("Search field is blank.")
+        }
+        else if (this.readyState === 4 && this.status === 200) {
+          if (this.responseText === "" ) {
+            $display.html("No items found.");
+          } else {
+            $display.html(this.responseText);
+          };
         } else {
-          $display.html(this.responseText);
+          $display.html("Searching...");
         };
-      } else {
-        $display.html("Searching...");
-      };
-    }
-    xmlhttp.open("GET", "app.php?q=" + $keyword, true);
-    xmlhttp.send();
+      }
+    })
   }
 
   function refreshData(){
     var $display = $("#content");
+    // AJAX request- to DB
     var xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("GET", "app.php", true);
+    xmlhttp.send();
     xmlhttp.onreadystatechange = function() {
       if (this.readyState === 4 && this.status === 200) {
         $display.html(this.responseText);
@@ -39,18 +55,16 @@
         $display.html("Loading...");
       };
     }
-    xmlhttp.open("GET", "app.php", true);
-    xmlhttp.send();
   }
 
   function addToDB(index){
+    // Use index to select specific item details from page
     var $asin = $("#" + index + " span.asin").text();
     var $title = $("#" + index + " span.title").text();
     var $mpn = $("#" + index +" span.mpn").text();
     var $price = $("#" + index + " span.price").text();
 
-    console.log($price);
-    // Handle "too low to display" or not shown
+    // Handle price "too low to display" or not shown
     if ($price === "Too low to display"){
       $price = 0;
     } else if ($price) {
@@ -59,9 +73,16 @@
       $price = 0;
     }
 
+    // Display message with title of item saved
     $("#status").html("Added " + $title);
+
     var $display = $("#content");
+    // AJAX Request - "Post" request to DB
     var xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("POST", "app.php", true);
+    xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    // Send data to be added to DB
+    xmlhttp.send("asin=" + $asin + "&title=" + $title + "&mpn=" + $mpn + "&price=" + $price);
     xmlhttp.onreadystatechange = function() {
       if (this.readyState === 4 && this.status === 200) {
         $display.html(this.responseText);
@@ -69,25 +90,26 @@
         $display.html("Saving...");
       };
     }
-    xmlhttp.open("POST", "app.php", true);
-    xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    xmlhttp.send("asin=" + $asin + "&title=" + $title + "&mpn=" + $mpn + "&price=" + $price);
   }
 
+  // On page load, display current DB contents and create event listener for search form
   window.onload = function() {
     refreshData();
+    createEventListener();
   }
 
 </script>
 </head>
 <body>
+  <nav class="navbar bg-primary"><img src="amazon-white.png" alt="amazon-logo" class="logo">Product Finder for <img src="quantum-logo.png" alt="quantum-logo" class="qlogo"></nav>
   <div id="left-col" class="col-lg-6">
     <p><span id="content"></span></p>
   </div>
   <div id="right-col" class="col-lg-6">
-    <form>
-      <input id="keyword" type="text">
-      <button type="button" onclick="query()">Search</button>
+    <form class="form">
+      <label class="sr-only" for="keyword">Search</label>
+      <input class="form-control" id="keyword" placeholder="Search Amazon" type="text">
+      <button type="submit" class="btn btn-default" aria-label="Left Align"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
     </form>
     <p id="status" />
     <p id="search-results"></p>

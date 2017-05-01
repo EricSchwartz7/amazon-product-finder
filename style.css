@@ -1,0 +1,54 @@
+.glyphicon-search {
+  font-size: 1.4em;
+}
+
+nav {
+  text-align: center;
+  font-size: 1.7em;
+  position: relative;
+  line-height: 50px;
+}
+
+
+#search-results {
+  text-align: left;
+}
+
+#right-col {
+  display: block;
+}
+
+#keyword {
+  width: 100%;
+}
+
+.form {
+  display: flex;
+}
+
+.logo {
+  height: 45px;
+}
+
+.qlogo {
+  height: 65px;
+}
+
+.item-right {
+  text-align: right;
+  line-height: 20px;
+}
+
+.item {
+  display: flex;
+  border-style: solid;
+  border-width: 1px;
+  border-color: rgba(0, 0, 0, 0.20);
+  margin-bottom: 10px;
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+
+.btn-db {
+  padding-top: 7px;
+}
