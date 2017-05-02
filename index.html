@@ -82,12 +82,28 @@
     xmlhttp.open("POST", "app.php", true);
     xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     // Send data to be added to DB
-    xmlhttp.send("asin=" + $asin + "&title=" + $title + "&mpn=" + $mpn + "&price=" + $price);
+    xmlhttp.send("asin=" + $asin + "&title=" + encodeURIComponent($title) + "&mpn=" + $mpn + "&price=" + $price);
     xmlhttp.onreadystatechange = function() {
       if (this.readyState === 4 && this.status === 200) {
         $display.html(this.responseText);
       } else {
         $display.html("Saving...");
+      };
+    }
+  }
+
+  function removeFromDB(asin){
+    $("#status").html("Item Removed.");
+    var $display = $("#content");
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("POST", "app.php", true);
+    xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xmlhttp.send("asin=" + asin);
+    xmlhttp.onreadystatechange = function() {
+      if (this.readyState === 4 && this.status === 200) {
+        $display.html(this.responseText);
+      } else {
+        $display.html("Deleting...");
       };
     }
   }

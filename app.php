@@ -51,6 +51,28 @@ function APICall($keywords){
   printSearchResults($parsed_xml);
 }
 
+function connectToDB(){
+  // Create connection to ClearDB
+  $url = parse_url(getenv("CLEARDB_DATABASE_URL"));
+
+  $server = $url["host"];
+  $username = $url["user"];
+  $password = $url["pass"];
+  $db = substr($url["path"], 1);
+
+  $conn = new mysqli($server, $username, $password, $db);
+
+  // Create connection to local DB
+  // $conn = mysqli_connect(DB_SERVERNAME, DB_USERNAME, DB_PASSWORD, DB_DATABASE);
+
+  // Check connection
+  if (!$conn) {
+    return die("Connection failed: " . mysqli_connect_error());
+  };
+
+  return $conn;
+}
+
 
 function printSearchResults($parsed_xml){
   $numOfItems = $parsed_xml->Items->TotalResults;
@@ -100,21 +122,7 @@ function printSearchResults($parsed_xml){
 // Database interaction
 function printData(){
 
-  $url = parse_url(getenv("CLEARDB_DATABASE_URL"));
-
-  $server = $url["host"];
-  $username = $url["user"];
-  $password = $url["pass"];
-  $db = substr($url["path"], 1);
-
-  $conn = new mysqli($server, $username, $password, $db);
-
-  // Create connection
-  // $conn = mysqli_connect(DB_SERVERNAME, DB_USERNAME, DB_PASSWORD, DB_DATABASE);
-  // Check connection
-  if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error());
-  }
+  $conn = connectToDB();
 
   $sql = "SELECT asin, title, mpn, price FROM items";
   $result = mysqli_query($conn, $sql);
@@ -123,10 +131,10 @@ function printData(){
     echo "<table class='table table-hover'><tr><th>ASIN</th><th>Title</th><th>MPN</th><th>Price</th></tr>";
     // output data of each row
     while($row = $result->fetch_assoc()) {
-      // echo "<tr><td>".$row["asin"]."</td></tr>";
 
       $price = $row["price"];
       settype($price, "string");
+
       if ($price == "0"){
         $price = "Not shown";
       }
@@ -135,10 +143,10 @@ function printData(){
       };
 
       echo "<tr><td>".$row["asin"]
-      ."</td><td>".stripslashes($row["title"])
-      ."</td><td>".$row["mpn"]
-      ."</td><td>".$price
-      ."</td></tr>";
+      ."<br><button type='button' class='btn btn-default' onclick=removeFromDB('".$row["asin"]."')>X</button></td>
+      <td>".stripslashes($row["title"])."</td>
+      <td>".$row["mpn"]."</td>
+      <td>".$price."</td></tr>";
     }
     echo "</table>";
   } else {
@@ -155,23 +163,7 @@ function addToDB(){
   $mpn = $_POST["mpn"];
   $price = $_POST["price"];
 
-  // Create connection to ClearDB
-  $url = parse_url(getenv("CLEARDB_DATABASE_URL"));
-
-  $server = $url["host"];
-  $username = $url["user"];
-  $password = $url["pass"];
-  $db = substr($url["path"], 1);
-
-  $conn = new mysqli($server, $username, $password, $db);
-
-  // Create connection to local DB
-  // $conn = mysqli_connect(DB_SERVERNAME, DB_USERNAME, DB_PASSWORD, DB_DATABASE);
-
-  // Check connection
-  if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error());
-  }
+  $conn = connectToDB();
 
   // Define the SQL query to add item data to DB
   $sql = "INSERT INTO items (asin, title, mpn, price) VALUES ('".$asin."', '".$title."', '".$mpn."', ".$price.")";
@@ -186,12 +178,23 @@ function addToDB(){
   printData();
 }
 
+function removeFromDB(){
+  $asin = $_POST["asin"];
+  $conn = connectToDB();
+  $sql = "DELETE FROM items WHERE (asin = '".$asin."') LIMIT 1";
+  mysqli_query($conn, $sql);
+  $conn->close();
+  printData();
+}
+
 // Determine which request to handle, then trigger the appropriate function
 if ($_REQUEST["q"]){
   $keywords = $_REQUEST["q"];
   APICall($keywords);
-} elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST["title"]) {
   addToDB();
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  removeFromDB();
 } elseif (!$_REQUEST["q"]) {
   printData();
 };
